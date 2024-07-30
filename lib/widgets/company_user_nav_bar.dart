@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vihanga_cabs_user_portal/authentication/user_login_screen.dart';
 import 'package:vihanga_cabs_user_portal/user_pages/home_page.dart';
+import 'package:vihanga_cabs_user_portal/user_pages/ongoing_rides.dart';
+import 'package:vihanga_cabs_user_portal/user_pages/ride_request_details.dart';
 
 
 class CompanyUserNavBar extends StatelessWidget {
@@ -16,14 +18,14 @@ class CompanyUserNavBar extends StatelessWidget {
   }
 
 
-  void _goToNewRideRequestPage(BuildContext context) {
+  void _goToRideRequestPage(BuildContext context) {
     // Navigate to the new ride request page
-    //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => NewRideRequest(userId: userId, companyUserId: companyUserId),));
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => RideRequestDetails(userId: userId, companyUserId: companyUserId),));
   }
 
   void _goToOngoingRidesPage(BuildContext context) {
     // Navigate to the ongoing rides page
-    //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => OngoingRides(userId: userId, companyUserId: companyUserId),));
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => OngoingRides(userId: userId, companyUserId: companyUserId),));
   }
 
   void _goToRidesHistoryPage(BuildContext context) {
@@ -63,8 +65,8 @@ class CompanyUserNavBar extends StatelessWidget {
 
             ListTile(
               leading: Icon(Icons.directions_car),
-              title: Text('New Ride Request'),
-              onTap: () => _goToNewRideRequestPage(context),
+              title: Text('Ride Requests'),
+              onTap: () => _goToRideRequestPage(context),
             ),
             ListTile(
               leading: Icon(Icons.play_arrow),

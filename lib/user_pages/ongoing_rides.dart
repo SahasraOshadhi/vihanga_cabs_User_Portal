@@ -1,132 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import 'package:vihanga_cabs_user_portal/widgets/company_user_nav_bar.dart';
-import 'package:vihanga_cabs_user_portal/widgets/profile_header.dart';
 
-class RideHistory extends StatefulWidget {
+class OngoingRides extends StatefulWidget {
   final String userId;
   final String companyUserId;
-  const RideHistory({super.key, required this.userId, required this.companyUserId});
+
+  const OngoingRides({Key? key, required this.userId, required this.companyUserId}) : super(key: key);
 
   @override
-  State<RideHistory> createState() => _RideHistoryState();
+  _OngoingRidesState createState() => _OngoingRidesState();
 }
 
-class _RideHistoryState extends State<RideHistory> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  late Future<Map<String, dynamic>> _userData;
-
-  @override
-  void initState() {
-    super.initState();
-    _userData = _fetchUserData();
-  }
-
-  Future<Map<String, dynamic>> _fetchUserData() async {
-    DocumentSnapshot userDoc = await _firestore.collection('company_users').doc(widget.userId).get();
-
-    if (userDoc.exists) {
-      final data = userDoc.data() as Map<String, dynamic>;
-      final String name = data['name'] ?? '';
-      final String email = data['email'] ?? '';
-      final String imageUrl = data['profilePic'] ?? '';
-
-      print(userDoc.id);
-
-      return {
-        'name': name,
-        'email': email,
-        'imageUrl': imageUrl,
-      };
-    } else {
-      print('No user data found for the provided company user ID.');
-      return {};
-    }
-  }
-
+class _OngoingRidesState extends State<OngoingRides> {
   @override
   Widget build(BuildContext context) {
-    final String currentMonth = DateFormat('MMMM').format(DateTime.now());
-
     return Scaffold(
       drawer: CompanyUserNavBar(userId: widget.userId, companyUserId: widget.companyUserId),
       appBar: AppBar(
-        title: const Text('Welcome to Vihanga Cabs'),
+        title: const Text('Ongoing Rides'),
         backgroundColor: Colors.amber,
       ),
-      body: SafeArea(
-        child: FutureBuilder<Map<String, dynamic>>(
-          future: _userData,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error fetching user data: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No user data available'));
-            } else {
-              final userData = snapshot.data!;
-              final String name = userData['name'];
-              final String email = userData['email'];
-              final String imageUrl = userData['imageUrl'].isNotEmpty
-                  ? userData['imageUrl']
-                  : 'assets/images/default_profile.jpg';
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('ride_requests')
+            .where('userId', isEqualTo: widget.userId)
+            .where('companyUserId', isEqualTo: widget.companyUserId)
+            .where('acceptedByDriver', isEqualTo: 'yes') // Only show assigned requests
+            .where('rideCompletedByUser', isEqualTo: 'no') // Only show requests not completed by the user
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
 
-              return Column(
-                children: [
-                  const SizedBox(height: 8),
-                  ProfileHeader(
-                    name: name,
-                    email: email,
-                    imageUrl: imageUrl,
-                  ),
-                  Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('ride_requests')
-                          .where('userId', isEqualTo: widget.userId)
-                          .where('companyUserId', isEqualTo: widget.companyUserId)
-                          .where('rideCompletedByUser', isEqualTo: 'yes')
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
+          final ongoingRides = snapshot.data!.docs;
 
-                        final completedRides = snapshot.data!.docs;
-
-                        return ListView.builder(
-                          itemCount: completedRides.length,
-                          itemBuilder: (context, index) {
-                            final rideRequest = completedRides[index];
-                            return CompletedRideCard(
-                              rideRequest: rideRequest,
-                              userId: widget.userId,
-                              companyUserId: widget.companyUserId,
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
+          return ListView.builder(
+            itemCount: ongoingRides.length,
+            itemBuilder: (context, index) {
+              final rideRequest = ongoingRides[index];
+              return OngoingRideCard(
+                rideRequest: rideRequest,
+                userId: widget.userId,
+                companyUserId: widget.companyUserId,
               );
-            }
-          },
-        ),
+            },
+          );
+        },
       ),
     );
   }
 }
 
-class CompletedRideCard extends StatelessWidget {
+class OngoingRideCard extends StatelessWidget {
   final QueryDocumentSnapshot rideRequest;
   final String userId;
   final String companyUserId;
 
-  const CompletedRideCard({
+  const OngoingRideCard({
     Key? key,
     required this.rideRequest,
     required this.userId,
@@ -137,14 +69,14 @@ class CompletedRideCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final rideRequestData = rideRequest.data() as Map<String, dynamic>;
 
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
           .collection('ride_requests')
           .doc(rideRequest.id)
-          .get(),
+          .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         final updatedRideRequestData = snapshot.data!.data() as Map<String, dynamic>?;
@@ -154,7 +86,7 @@ class CompletedRideCard extends StatelessWidget {
             margin: EdgeInsets.all(10.0),
             child: Padding(
               padding: const EdgeInsets.all(15.0),
-              child: const Text("Invalid ride request data."),
+              child: Text("Invalid ride request data."),
             ),
           );
         }
@@ -168,7 +100,7 @@ class CompletedRideCard extends StatelessWidget {
           future: _fetchDriverData(rideRequestData['assignedDriver'] ?? ''),
           builder: (context, driverSnapshot) {
             if (!driverSnapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
             final driverData = driverSnapshot.data!;
 
@@ -204,6 +136,20 @@ class CompletedRideCard extends StatelessWidget {
                       SizedBox(height: 10),
                       Text('Driver Contact: ${driverData['telNum'] ?? 'N/A'}'),
                       SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: rideCompletedByDriver
+                                ? () => _completeRide(context, rideRequest.id)
+                                : null,
+                            child: Text(statusText),
+                            style: ElevatedButton.styleFrom(
+                              primary: statusColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -219,5 +165,13 @@ class CompletedRideCard extends StatelessWidget {
     if (driverId.isEmpty) return {};
     DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance.collection('drivers').doc(driverId).get();
     return driverSnapshot.data() as Map<String, dynamic>? ?? {};
+  }
+
+  Future<void> _completeRide(BuildContext context, String rideRequestId) async {
+    await FirebaseFirestore.instance.collection('ride_requests').doc(rideRequestId).update({
+      'rideCompletedByUser': 'yes',
+    });
+    // Force the parent widget to rebuild and refresh the list
+    (context as Element).reassemble();
   }
 }

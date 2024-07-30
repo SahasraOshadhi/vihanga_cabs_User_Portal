@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vihanga_cabs_user_portal/authentication/user_login_screen.dart';
 import 'package:vihanga_cabs_user_portal/manager_pages/manager_home_page.dart';
+import 'package:vihanga_cabs_user_portal/manager_pages/ride_history.dart';
 import 'package:vihanga_cabs_user_portal/manager_pages/user_details.dart';
 
 
@@ -23,6 +24,11 @@ class ManagerNavBar extends StatelessWidget {
   void _goToUserDetailsPage(BuildContext context) {
     // Navigate to the user details page
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => UserDetails(docId: docId,)));
+  }
+
+  void _goToRideHistoryPage(BuildContext context) {
+    // Navigate to the user details page
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => RideHistoryCompany(docId: docId,)));
   }
 
   void _goToProfilePage(BuildContext context) {
@@ -53,16 +59,25 @@ class ManagerNavBar extends StatelessWidget {
               title: Text('Dashboard'),
               onTap: () => _goToDashboardPage(context),
             ),
+
             ListTile(
               leading: Icon(Icons.person),
               title: Text('User Details'),
               onTap: () => _goToUserDetailsPage(context),
             ),
+
+            ListTile(
+              leading: Icon(Icons.done),
+              title: Text('Ride History'),
+              onTap: () => _goToRideHistoryPage(context),
+            ),
+
             ListTile(
               leading: Icon(Icons.account_circle),
               title: Text('Profile'),
               onTap: () => _goToProfilePage(context),
             ),
+
             ListTile(
               leading: Icon(Icons.exit_to_app),
               title: Text('Log Out'),

@@ -58,11 +58,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
 
           if (userData['email'] == _emailController.text.trim()) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (c) => RideHistory(userId: userId, companyUserId: companyUserId)
-                ),
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (c) => RideHistory(userId: userId, companyUserId: companyUserId)),
               ).then((value) {
                 print("Navigation completed.");
               }).catchError((error) {

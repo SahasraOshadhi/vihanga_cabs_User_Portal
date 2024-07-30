@@ -43,8 +43,17 @@ dependencies:
   cloud_firestore: ^4.0.5
   firebase_analytics: ^10.0.0
   flutter_dotenv: ^5.0.2
-  intl: ^0.17.0
+  intl: ^0.18.1
   cloud_functions: ^4.6.8
+  google_maps_flutter: ^2.1.5
+  google_maps_flutter_web: ^0.5.0+1
+  geocoding: ^2.0.0
+  geocode: ^1.0.1
+  flutter_map: ^3.0.0
+  latlong2: ^0.8.1
+  easy_localization: ^3.0.0
+  shared_preferences: ^2.0.6
+  cached_network_image: ^3.0.0
 
 dev_dependencies:
   flutter_test:

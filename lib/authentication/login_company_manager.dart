@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vihanga_cabs_user_portal/manager_pages/manager_home_page.dart';
+import 'package:vihanga_cabs_user_portal/manager_pages/ride_history.dart';
 import 'package:vihanga_cabs_user_portal/methods/common_methods.dart';
 import 'package:vihanga_cabs_user_portal/widgets/loading_dialog.dart';
 
@@ -69,7 +70,7 @@ class _ManagerLoginScreenState extends State<ManagerLoginScreen> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                    builder: (c) => HomePageManager(docId: docId)
+                    builder: (c) => RideHistoryCompany(docId: docId)
                 ),
               ).then((value) {
                 print("Navigation completed.");
